@@ -5,18 +5,18 @@ class ArticleGenerator < Rails::Generators::Base
 
   def create_partial
   	say "Creating partial"
+
     create_file "app/views/articles/_#{view_id}.html.erb", "# Partial for article with view ID #{view_id}"
   end
 
   def add_to_config
   	say "Adding to config"
-  	append_to_file "config/articles.yml" do
-		  article_config
-		end
+
+  	append_to_file "config/articles.yml", article_config
   end
 
   def complete
-  	say "Remember to update the database with article:db:create"
+  	say "Done! Remember to update the database with article:db:create"
   end
 
   private
