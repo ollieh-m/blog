@@ -1,12 +1,12 @@
 require "securerandom"
 
 class ArticleGenerator < Rails::Generators::Base
-	class_option :title, type: :string, required: false, desc: "What's the article called? This can change later"
+	class_option :title, type: :string, desc: "What's the article called? This can change later"
 
   def create_partial
   	say "Creating partial"
 
-    create_file "app/views/articles/_#{view_id}.html.erb", "# Partial for article with view ID #{view_id}"
+    create_file "app/views/articles/_#{view_id}.html.erb", "# Partial for article #{options[:title]} with view ID #{view_id}"
   end
 
   def add_to_config
@@ -22,7 +22,7 @@ class ArticleGenerator < Rails::Generators::Base
   private
 
   	def view_id
-  		@_view_id ||= [random_string, timestamp].join("-")
+  		@_view_id ||= [timestamp, random_string].join("_")
   	end
 
   	def random_string
@@ -30,7 +30,7 @@ class ArticleGenerator < Rails::Generators::Base
   	end
 
   	def timestamp
-  		Time.now.strftime("%d%m%Y-%H%M%S")
+  		Time.now.strftime("%d%m%Y%H%M%S")
   	end
 
   	def article_config
