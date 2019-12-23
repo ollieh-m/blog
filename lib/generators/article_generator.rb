@@ -16,7 +16,7 @@ class ArticleGenerator < Rails::Generators::Base
   end
 
   def complete
-  	say "Done! Remember to update the database with article:db:create"
+  	say "Done! Remember to update the database with articles:sync"
   end
 
   private
