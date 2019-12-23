@@ -14,7 +14,7 @@ class ArticlesCommand < Rails::Command::Base
   no_commands do
   	def unsynced_articles
   		articles_from_config.reverse.take_while do |article_attributes|
-	  		article_attributes["view_id"] == latest_persisted_view_id
+	  		article_attributes["view_id"] != latest_persisted_view_id
 	  	end
   	end
 
