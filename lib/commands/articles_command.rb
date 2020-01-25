@@ -1,5 +1,4 @@
 require 'yaml'
-require 'byebug'
 
 class ArticlesCommand < Rails::Command::Base
 	desc "sync", "ensures articles in config/article.yml have a corresponding database record"
