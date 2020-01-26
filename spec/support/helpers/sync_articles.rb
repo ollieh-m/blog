@@ -1,4 +1,4 @@
-require 'rails/commands'
+require 'rails/command'
 require Rails.root.join('lib', 'commands', 'articles_command.rb')
 
 module SyncArticles
