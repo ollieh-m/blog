@@ -1,0 +1,6 @@
+<%= link_to article do %>
+  <div class="<%= article_card_colour_classes(article) %>">
+    <div class="p-4 text-xl font-bold"><%= article.title %></div>
+    <div class="p-4"><%= l(article.created_at.to_date, format: :long) %></div>
+  </div>
+<% end %>

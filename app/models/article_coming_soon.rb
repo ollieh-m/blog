@@ -1,10 +1,6 @@
 class ArticleComingSoon
   def title
-    "Coming soon"
-  end
-
-  def created_at
-    "some time in the future"
+    "I need to write more things..."
   end
 
   def colour
