@@ -1,8 +1,8 @@
 <div class="max-w-2xl m-auto">
   <%= render "grid", items: @articles do |article| %>
-    <div class="<%= article_card_colour_classes(article) %> rounded text-center h-full flex content-center justify-center flex-wrap">
-      <div class="p-2"><%= article.title %></div>
-      <div class="p-2"><%= article.created_at %></div>
+    <div class="<%= article_card_colour_classes(article) %> rounded text-center flex content-center justify-center flex-wrap">
+      <div class="p-2 w-full"><%= article.title %></div>
+      <div class="p-2 w-full"><%= article.created_at %></div>
     </div>
   <% end %>
 </div>
