@@ -1,0 +1,61 @@
+<% # View for article Hello World with view ID 20062021210208_015694c177 %>
+
+Welcome to my blog. This is the first thing I'm posting, so it's not much of a blog... yet. And I have no idea what it will become, because it's mainly an experiment to find out
+a) whether I have anything to say,
+b) (if a)) whether I find it useful or otherwise rewarding to share those things publicly, and
+c) (if a) and b)) whether I can find the time to write things regularly
+
+I decided to try this experiment a few months ago, because every now and then I do have an idea for something I might like to share with The World or my future self - something I've learnt or thought through that might be interesting to others or that I might want crystalised for future reference. But I'm never _sure_ if I'd really like going to the trouble of forming it into a shareable Thing or how I'd feel about it being public and (maybe) seen. And I realised - talking about this pointless uncertainty with a colleague - that the only way to find out is to give it a go. So I committed to starting a blog and finding out, and I set myself a deadline: share a first post before July.
+
+Well, it's nearly the end of June, and this is that first post. It's about this blog: the why (above) and (below) the how.
+
+I've never had a blog before. I've never used Wordpress. My only technical experience with any blog was helping to put together the bare bones of a <%= link_to "Jekyll", "https://jekyllrb.com" %> site and host it on Github pages for a client at my previous job. 
+
+I was a bit apprehensive about delving into the ocean of blog-building and -hosting tools. I feared a blind Google would be overwhelming. So instead I started by thinking about what site really is and the simplest way I could achieve it.
+
+A blog is a site with some pages. Yes, each page could be made from content stored in a database or some filesystem in the cloud. But pretty quickly I decided for me the easiest way to write, format and store an article would be to add an html file into the site repository - or, more precisely, as a (mainly) Rails developer, to add an `html.erb` `view` into a Rails app.
+
+(This was essentially how I remember the Jekyll blog working that I helped with: add an article by adding a file (written with some nice, convenient markup) into a repo. And I remember liking that simplicity.)
+
+But I could also see the benefits of having articles in a database. It would be a lot easier to make updates through a web interface, without editing code and redeploying. That wasn't really an issue for me - I'm happy enough editing `html.erb` files. 
+
+But if articles were in a database, I could also easily store information about them (a timestamp, description, title, view count) _and_ create relations between articles and other things like likes, keywords and categories. 
+
+So I wondered if I could both
+a) store the content of each article as a Rails view - which I'd edit locally and deploy - while _also_ 
+b) having a record of each article in the database 
+
+In other words, if I add an article on my machine then redeploy the site, how can I ensure there is a record for the new article in the production database?
+
+First thing's first: when I create a database record for an article, it needs to _correspond_ to the article, which is just a file, whether I've created that record locally in my development database or in production or in other staging environments. 
+
+The database record in each environment needs some reference to the article. The identifier can't be the record ID, which could be different in each environment. So I settled on each record having a `view_id` which matches up with the article's filename. An Article record in production has the same `view_id` referencing the same file as an Article record in my local database.
+
+Next: I need a source of truth, available in every environment, listing the articles (and their `view_id`s) that need a corresponding database record, so after or during deployment, I can create any missing records. 
+
+This source of truth _could_ be the files themselves. But I though it might also be useful to create records with attributes _other_ than the filename (or `view_id`). So I settled on a yaml file that (currently) lists each article's `view_id` and initial title.
+
+Ultimately, then, adding an article means:
+- adding an entry to the yaml file with a title and `view_id`
+- creating a file with the `view_id` as the filename
+- deploying the change and creating a database record for each entry in the yaml file that doesn't already have a record
+
+And these steps are smoothed out by some custom rails commands. 
+```
+bin/rails add_article:execute --title="Hello World" # creates the file and adds to the yaml
+```
+```
+bin/rails sync_articles:execute # run after deploy, creates the record
+```
+
+So far, articles only have a title and a timestamp. No tags, likes or categories. But each article is both a file (which I can edit locally) and a record in an `articles` table. So listing articles means fetching `Article.recent_first`. Clicking an article takes you to `/articles/:id`, where we fetch the correct article using `Article.find(params[:id])`. In the Article model, we define
+```
+def to_partial_path
+  "articles/#{view_id}"
+end
+```
+which means we can render the view for the article like this:
+```
+<%%= render @article %>
+```
+

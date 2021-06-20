@@ -9,7 +9,7 @@ class RemoveArticleCommand < Rails::Command::Base
     remove_view
     remove_from_config
 
-    say "Done! Remember to update the database in each environment with `rails articles:sync`"
+    say "Done! Remember to update the database in each environment with `rails sync_articles:execute`"
   end
 
   no_commands do

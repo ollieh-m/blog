@@ -9,14 +9,14 @@ class AddArticleCommand < Rails::Command::Base
     create_view
     add_to_config
 
-    say "Done! Remember to update the database in each environment with `rails articles:sync`"
+    say "Done! Remember to update the database in each environment with `rails sync_articles:execute`"
   end
 
   no_commands do
     def create_view
       say "Creating view"
 
-      create_file "app/views/articles/_#{view_id}.html.erb", "# View for article #{options[:title]} with view ID #{view_id}"
+      create_file "app/views/articles/_#{view_id}.html.erb", "<% # View for article #{options[:title]} with view ID #{view_id} %>"
     end
 
     def add_to_config
