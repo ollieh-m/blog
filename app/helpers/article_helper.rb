@@ -27,8 +27,8 @@ module ArticleHelper
     end
   end
 
-  def list(&content)
-    items = capture(&content).strip.split("\n")
+  def list(&block)
+    items = capture(&block).strip.split("\n")
 
     tag.ul class: "mt-4" do
       items.each do |item|
@@ -43,9 +43,9 @@ module ArticleHelper
     end
   end
 
-  def code(language:, &content)
-    source_code = capture(&content)
-    
+  def code(language:, &block)
+    source_code = capture(&block)
+
     tag.div class: "highlight bg-gray-100 my-2 text-sm overflow-scroll" do
       CodeSnippet.new(language, source_code).to_html
     end
