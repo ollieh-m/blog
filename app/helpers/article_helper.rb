@@ -38,4 +38,20 @@ module ArticleHelper
       end
     end
   end
+
+  def inline_code(text = nil)
+    tag.pre class: "bg-gray-200 inline" do
+      text || yield
+    end
+  end
+
+  def code(language:)
+    source_code = capture do
+      yield
+    end
+
+    tag.div class: "highlight bg-gray-100 my-2 text-sm overflow-scroll" do
+      CodeSnippet.new(language, source_code).to_html
+    end
+  end
 end

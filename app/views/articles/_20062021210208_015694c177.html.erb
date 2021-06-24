@@ -32,7 +32,7 @@
 <% end %>
 
 <%= para do %>
-  A blog is a site with some pages. Yes, each page could be made from content stored in a database or some filesystem in the cloud. But pretty quickly I decided for me the easiest way to write, format and store an article would be to add an html file into the site repository - or, more precisely, as a (mainly) Rails developer, to add an `html.erb` `view` into a Rails app.
+  A blog is a site with some pages. Yes, each page could be made from content stored in a database or some filesystem in the cloud. But pretty quickly I decided for me the easiest way to write, format and store an article would be to add an html file into the site repository - or, more precisely, as a (mainly) Rails developer, to add an <%= inline_code "html.erb" %> view into a Rails app.
 <% end %>
 
 <%= para do %>
@@ -40,7 +40,7 @@
 <% end %>
 
 <%= para do %>
-  But I could also see the benefits of having articles in a database. It would be a lot easier to make updates through a web interface, without editing code and redeploying. That wasn't really an issue for me - I'm happy enough editing `html.erb` files. 
+  But I could also see the benefits of having articles in a database. It would be a lot easier to make updates through a web interface, without editing code and redeploying. That wasn't really an issue for me - I'm happy enough editing <%= inline_code "html.erb" %> files. 
 <% end %>
 
 <%= para do %>
@@ -64,49 +64,66 @@
 <% end %>
 
 <%= para do %>
-  The database record in each environment needs some reference to the article. The identifier can't be the record ID, which could be different in each environment. So I settled on each record having a `view_id` which matches up with the article's filename. An Article record in production has the same `view_id` referencing the same file as an Article record in my local database.
+  The database record in each environment needs some reference to the article. The identifier can't be the record ID, which could be different in each environment. So I settled on each record having a <%= inline_code "view_id" %> which matches up with the article's filename. An Article record in production has the same <%= inline_code "view_id" %> referencing the same file as an Article record in my local database.
 <% end %>
 
 <%= para do %>
-  Next: I need a source of truth, available in every environment, listing the articles (and their `view_id`s) that need a corresponding database record, so after or during deployment, I can create any missing records. 
+  Next: I need a source of truth, available in every environment, telling me which articles need a corresponding database record and what their <%= inline_code "view_id" %>s are, so after or during deployment, I can create any missing records. 
 <% end %>
 
 <%= para do %>
-  This source of truth <%= italic "could" %> be the files themselves. But I though it might also be useful to create records with attributes <%= italic "other" %> than the filename (or `view_id`). So I settled on a yaml file that (currently) lists each article's `view_id` and initial title.
+  This source of truth <%= italic "could" %> be the files themselves. But I though it might also be useful to create records with attributes <%= italic "other" %> than the filename (or <%= inline_code "view_id" %>). So I settled on a yaml file that (currently) lists each article's <%= inline_code "view_id" %> and initial title.
 <% end %>
 
 <%= para do %>
   Ultimately, then, adding an article means:
   <%= list do %>
-    - adding an entry to the yaml file with a title and `view_id`
-    - creating a file with the `view_id` as the filename
+    - adding an entry to the yaml file with a title and <%= inline_code "view_id" %>
+    - creating a file with the <%= inline_code "view_id" %> as the filename
     - deploying the change and creating a database record for each entry in the yaml file that doesn't already have a record
   <% end %>
 <% end %>
 
 <%= para do %>
-  And these steps are smoothed out by some custom rails commands. 
-  <%= render "code", language: :shell do %>
+  And these steps are smoothed out by some custom rails commands. This one adds an entry to the <%= inline_code "articles.yml" %> file and creates a <%= inline_code "html.erb" %> file with a unique <%= inline_code "view_id" %> set as the filename:
+  <%= code language: :shell do %>
     bin/rails add_article:execute --title="Hello World"
   <% end %>
-  <%= render "code", language: :shell do %>
+  This one (run in each environment) ensures each article has a record in the database with the correct <%= inline_code "view_id" %>:
+  <%= code language: :shell do %>
     bin/rails sync_articles:execute
   <% end %>
 <% end %>
 
 <%= para do %>
-  So far, articles only have a title and a timestamp. No tags, likes or categories. But each article is both a file (which I can edit locally) and a record in an `articles` table. So listing articles means fetching `Article.recent_first`. Clicking an article takes you to `/articles/:id`, where we fetch the correct article using `Article.find(params[:id])`. In the Article model, we define
-  <%= render "code", language: :ruby do %>
+  So far, articles only have a title and a timestamp. No tags, likes or categories. But each article is both a file (which I can edit locally) and a record in an <%= inline_code "articles" %> table. So listing articles means fetching <%= inline_code "Article.recent_first" %>. Clicking an article takes you to <%= inline_code "/articles/:id" %>, where we fetch the correct article using <%= inline_code "Article.find(params[:id])" %>. 
+<% end %>
+
+<%= para do %>
+  In the Article model, we define
+  <%= code language: :ruby do %>
     def to_partial_path
       "articles/#{view_id}"
     end
   <% end %>
-  which means we can render the view for the article like this:
-  <%= render "code", language: :ruby do %>
+  which means we can render the article (in <%= inline_code "/articles/show.html" %>) like this:
+  <%= code language: :ruby do %>
     <%%= render @article %>
   <% end %>
 <% end %>
 
 <%= para do %>
-  And tada. That's how - aside from some details - this article is on this blog for you to read.
+  And because an article is an <%= inline_code "html.erb" %> file...
+<% end %>
+
+<%= para do %>
+  <%= code language: :ruby do %>
+    <%%= para do %>
+      <%%= code language: :ruby do %>
+        I can do any old thing I want, like turn this paragraph into a 
+        code snippet that shows the kind of helper methods I've written 
+        to make writing an article pretty convenient
+      <%% end %>
+    <%% end %>
+  <% end %>
 <% end %>

@@ -1,7 +1,0 @@
-<% formatter = Rouge::Formatters::HTMLLineTable.new(Rouge::Formatters::HTML.new) %>
-<% lexer = "Rouge::Lexers::#{language.to_s.classify}".constantize.new %>
-<% source = yield.strip %>
-
-<div class="highlight bg-gray-100 my-2 text-sm overflow-scroll">
-  <%= formatter.format(lexer.lex(source)).html_safe %>
-</div>
