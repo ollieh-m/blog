@@ -50,4 +50,8 @@ module ArticleHelper
       CodeSnippet.new(language, source_code).to_html
     end
   end
+
+  def link_to(*args)
+    super(*args, class: "text-blue-600 hover:underline")
+  end
 end

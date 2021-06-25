@@ -44,7 +44,7 @@
 <% end %>
 
 <%= para do %>
-  But if articles were in a database, I could also easily store information about them (a timestamp, description, title, view count) <%= italic "and" %> create relations between articles and other things like likes, keywords and categories. 
+  But if articles were in a database, I could also easily store information about them (a timestamp, description, title, view count) <%= italic "and" %> create relations between articles and other things like likes, keywords, categories and comments. 
 <% end %>
 
 <%= para do %>
@@ -120,10 +120,14 @@
   <%= code language: :ruby do %>
     <%%= para do %>
       <%%= code language: :ruby do %>
-        I can do any old thing I want, like turn this paragraph into a 
+        I can do things like turn this paragraph into a 
         code snippet that shows the kind of helper methods I've written 
         to make writing an article pretty convenient
       <%% end %>
     <%% end %>
   <% end %>
+<% end %>
+
+<%= para do %>
+  That's more or less how this site came into being. Thank you for reading, and feel free to explore the full sourcecode <%= link_to "here", "https://github.com/ollieh-m/blog" %>.
 <% end %>
