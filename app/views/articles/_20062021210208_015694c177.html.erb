@@ -28,11 +28,11 @@
 <% end %>
 
 <%= para do %>
-  I was a bit apprehensive about delving into the ocean of blog-building and -hosting tools. I feared a blind Google would be overwhelming. So instead I started by thinking about what site really is and the simplest way I could achieve it.
+  I was a bit apprehensive about delving into the ocean of blog-building and -hosting tools. I feared a blind Google would be overwhelming. So instead I started by thinking about what a blog really is and the simplest way I could achieve it.
 <% end %>
 
 <%= para do %>
-  A blog is a site with some pages. Yes, each page could be made from content stored in a database or some filesystem in the cloud. But pretty quickly I decided for me the easiest way to write, format and store an article would be to add an html file into the site repository - or, more precisely, as a (mainly) Rails developer, to add an <%= inline_code "html.erb" %> view into a Rails app.
+  A blog is a site with some pages. Yes, each page could be made from content stored in a database or some filesystem in the cloud. But pretty quickly I decided for me the easiest way to write, format and store an article would be to add an html file into the site repository - or, more precisely, as a (mainly) Rails developer, to add an <%= inline_code "html.erb" %> file into a Rails app.
 <% end %>
 
 <%= para do %>
@@ -40,11 +40,11 @@
 <% end %>
 
 <%= para do %>
-  But I could also see the benefits of having articles in a database. It would be a lot easier to make updates through a web interface, without editing code and redeploying. That wasn't really an issue for me - I'm happy enough editing <%= inline_code "html.erb" %> files. 
+  But I could also see the benefits of having articles in a database. For one thing, it would be a lot easier to make updates through a web interface, without editing code and redeploying. But that wasn't really an issue for me - I'm happy enough editing <%= inline_code "html.erb" %> files. 
 <% end %>
 
 <%= para do %>
-  But if articles were in a database, I could also easily store information about them (a timestamp, description, title, view count) <%= italic "and" %> create relations between articles and other things like likes, keywords, categories and comments. 
+  If articles were in a database, however, I could also easily store information about them (a timestamp, description, title, view count) <%= italic "and" %> create relations between articles and other things like likes, keywords, categories and comments. 
 <% end %>
 
 <%= para do %>
@@ -64,11 +64,11 @@
 <% end %>
 
 <%= para do %>
-  The database record in each environment needs some reference to the article. The identifier can't be the record ID, which could be different in each environment. So I settled on each record having a <%= inline_code "view_id" %> which matches up with the article's filename. An Article record in production has the same <%= inline_code "view_id" %> referencing the same file as an Article record in my local database.
+  The database record in each environment needs some reference to the article. The identifier can't be the record ID, which could be different in each environment. So I settled on each record having a <%= inline_code "view_id" %> which matches up with the article's filename. An article record in production has the same <%= inline_code "view_id" %> referencing the same file as an article record in my local database.
 <% end %>
 
 <%= para do %>
-  Next: I need a source of truth, available in every environment, telling me which articles need a corresponding database record and what their <%= inline_code "view_id" %>s are, so after or during deployment, I can create any missing records. 
+  Next: I need a source of truth, available in every environment, telling me which articles need a corresponding database record and what their <%= inline_code "view_id" %>s are, so that after or during deployment, I can create any missing records. 
 <% end %>
 
 <%= para do %>
@@ -85,7 +85,7 @@
 <% end %>
 
 <%= para do %>
-  And these steps are smoothed out by some custom rails commands. This one adds an entry to the <%= inline_code "articles.yml" %> file and creates a <%= inline_code "html.erb" %> file with a unique <%= inline_code "view_id" %> set as the filename:
+  And these steps are smoothed out by some custom rails commands. This one adds the entry to the <%= inline_code "articles.yml" %> file and creates the <%= inline_code "html.erb" %> file with a unique <%= inline_code "view_id" %> set as the filename:
   <%= code language: :shell do %>
     bin/rails add_article:execute --title="Hello World"
   <% end %>
@@ -96,7 +96,7 @@
 <% end %>
 
 <%= para do %>
-  So far, articles only have a title and a timestamp. No tags, likes or categories. But each article is both a file (which I can edit locally) and a record in an <%= inline_code "articles" %> table. So listing articles means fetching <%= inline_code "Article.recent_first" %>. Clicking an article takes you to <%= inline_code "/articles/:id" %>, where we fetch the correct article using <%= inline_code "Article.find(params[:id])" %>. 
+  So far, articles only have a title and a timestamp. No tags, likes, categories or comments. But each article is both a file (which I can edit locally) and a record in an <%= inline_code "articles" %> table. So listing articles means fetching <%= inline_code "Article.recent_first" %>. Clicking an article takes you to <%= inline_code "/articles/:id" %>, where we fetch the correct article using <%= inline_code "Article.find(params[:id])" %>. 
 <% end %>
 
 <%= para do %>
@@ -129,5 +129,5 @@
 <% end %>
 
 <%= para do %>
-  That's more or less how this site came into being. Thank you for reading, and feel free to explore the full sourcecode <%= link_to "here", "https://github.com/ollieh-m/blog" %>.
+  And that's more or less how this site came into being, and how you're reading this page. Speaking of which, thank you for reading, and feel free to explore the full sourcecode <%= link_to "here", "https://github.com/ollieh-m/blog" %>.
 <% end %>
