@@ -107,7 +107,7 @@
     end
   <% end %>
   which means we can render the article (in <%= inline_code "/articles/show.html" %>) like this:
-  <%= code language: :ruby do %>
+  <%= code language: :erb do %>
     <%%= render @article %>
   <% end %>
 <% end %>
@@ -117,9 +117,9 @@
 <% end %>
 
 <%= para do %>
-  <%= code language: :ruby do %>
+  <%= code language: :erb do %>
     <%%= para do %>
-      <%%= code language: :ruby do %>
+      <%%= code language: :erb do %>
         I can do things like turn this paragraph into a 
         code snippet that shows the kind of helper methods I've written 
         to make writing an article pretty convenient

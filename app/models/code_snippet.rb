@@ -2,7 +2,8 @@ class CodeSnippet
   FORMATTER = Rouge::Formatters::HTMLLineTable.new(Rouge::Formatters::HTML.new)
   LEXERS = {
     ruby: Rouge::Lexers::Ruby.new,
-    shell: Rouge::Lexers::Shell.new
+    shell: Rouge::Lexers::Shell.new,
+    erb: Rouge::Lexers::ERB.new
   }
 
   def initialize(language, source_code)
