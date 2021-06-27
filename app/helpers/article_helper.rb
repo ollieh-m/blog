@@ -51,7 +51,8 @@ module ArticleHelper
     end
   end
 
-  def link_to(*args)
-    super(*args, class: "text-blue-600 hover:underline")
+  def link_to(*args, **options)
+    options = options.reverse_merge(class: "text-blue-600 hover:underline")
+    super(*args, **options)
   end
 end
