@@ -28,7 +28,7 @@ module ArticleHelper
   end
 
   def line
-    tag.div class: "border-b border-solid border-gray-200 mb-4"
+    tag.div class: "border-b border-solid border-gray-200"
   end
 
   def list(&block)
