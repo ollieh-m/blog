@@ -113,21 +113,28 @@
 <% end %>
 
 <%= para do %>
-  And because an article is an <%= inline_code "html.erb" %> file...
+  And because an article is an <%= inline_code "html.erb" %> file, I can style and format it any way I want<sup><%= link_to "1", "#note-1" %></sup>, without having to build text editor or preview functionality. I've made things pretty simple for myself, so If I've got something to write, I don't really have any excuses not to turn it into a nice, shiny article.
+<% end %>
+
+<%= para extra_class: "mb-8" do %>
+  Anyway, that's more or less how this site came into being, and how you're reading this page. Speaking of which, thank you for reading! And feel free to explore the full sourcecode <%= link_to "here", "https://github.com/ollieh-m/blog" %>.
+<% end %>
+
+<%= line %>
+
+<%= para do %>
+  <sup id="note-1">1</sup> including...
 <% end %>
 
 <%= para do %>
   <%= code language: :erb do %>
     <%%= para do %>
       <%%= code language: :erb do %>
-        I can do things like turn this paragraph into a 
-        code snippet that shows the kind of helper methods I've written 
-        to make writing an article pretty convenient
+        ...turning this paragraph into a code snippet that 
+        shows the kind of helper methods I've written to make 
+        writing an article more convenient
       <%% end %>
     <%% end %>
   <% end %>
 <% end %>
 
-<%= para do %>
-  And that's more or less how this site came into being, and how you're reading this page. Speaking of which, thank you for reading, and feel free to explore the full sourcecode <%= link_to "here", "https://github.com/ollieh-m/blog" %>.
-<% end %>

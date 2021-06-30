@@ -21,10 +21,14 @@ module ArticleHelper
     end
   end
 
-  def para(text = nil)
-    tag.div class: "text-base mb-4" do
+  def para(text = nil, extra_class: "")
+    tag.div class: "text-base mb-4 #{extra_class}" do
       text || yield
     end
+  end
+
+  def line
+    tag.div class: "border-b border-solid border-gray-200 mb-4"
   end
 
   def list(&block)
