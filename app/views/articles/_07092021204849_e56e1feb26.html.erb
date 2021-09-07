@@ -1,0 +1,140 @@
+<% # View for article Custom Error Handling With Turbo with view ID 07092021204849_e56e1feb26 %>
+
+<%= title article.title %>
+
+<%= para do %>
+  This post is three things:
+  <%= list do %>
+    1) an introduction to Turbo
+    2) a look at some options when we want to handle a form submission in ways Turbo isn't really designed for, especially when the server responds with an error<sup><%= link_to "1", "#note-1" %></sup>, and
+    3) some thoughts on making the switch to Turbo from <%= inline_code "rails-ujs" %>
+  <% end %>
+<% end %>
+
+<%= subtitle do %>
+  Introducing Turbo...
+<% end %>
+
+<%= para do %>
+  Most of this post is about <%= link_to "Turbo Drive","https://turbo.hotwired.dev/handbook/drive" %>, one of the four techniques that together constitute <%= link_to "Turbo", "https://turbo.hotwired.dev" %>. 
+<% end %>
+
+<%= para do %>
+  Turbo Drive is the bit that intercepts link clicks and form submissions to avoid full page reloads. It’s the new incarnation of <%= link_to "Turbolinks", "https://github.com/turbolinks/turbolinks" %>, which has been a default part of Rails apps for a long time. Turbolinks only intercepted link clicks, not form submissions - but now, if you have Turbo installed, a form without any data attributes will automatically be handled and ultimately submitted by <%= link_to "Turbo’s javascript", "https://github.com/hotwired/turbo/blob/efbad251b3a08efb6db61d33b6114c4b45da36b6/src/observers/form_submit_observer.ts#L16"%>. This means form submissions are by default <%= inline_code "ajax" %> requests, which don’t result in a full page load when the browser gets a response.
+<% end %>
+
+<%= para do %>
+  So what does happen with the response after Turbo submits a form?
+<% end %>
+
+<%= para do %>
+  a) If the response is a redirect, Turbo will follow that redirect, navigating to the new page (without a full page load) as if the user had clicked a link. This is equivalent to the <%= link_to "redirect support", "https://github.com/turbolinks/turbolinks-rails/blob/master/lib/turbolinks/redirection.rb" %> in Turbolinks-Rails when a form is submitted with an <%= inline_code "ajax" %> request - in other words, we did have a way pre-Turbo to submit a form and redirect without a full page load. 
+<% end %>
+
+<%= para do %>
+  b) If the response is <%= inline_code "html" %> and the status is 4XX or 5XX, Turbo will render that <%= inline_code "html" %> (without changing the URL). Turbolinks-Rails didn’t do this. Previously, if a <%= inline_code "POST" %> request returned some <%= inline_code "html" %>, nothing would happen without custom javascript to swap that <%= inline_code "html" %> into the page or simulate a Turbolinks visit. 
+<% end %>
+
+<%= para do %>
+  c) If the response is a Turbo Stream response, Turbo will process it... A what? Turbo Streams are a new kind of response. Their content-type header is <%= inline_code "text/vnd.turbo-stream.html" %> and they contain one or more Turbo Stream elements, which are custom <%= inline_code "html" %> elements. Turbo automatically appends these elements to the DOM and whenever such an element is added, it triggers DOM changes (such as appending or replacing or removing <%= inline_code "html" %>) as specified by the markup in the Turbo Stream element.
+<% end %>
+
+<%= para do %>
+  Those three alternatives are the <%= italic "only" %> things Turbo is designed to do after a form is submitted: 
+  <%= list do %>
+    a) follow a redirect, 
+    b) render <%= inline_code "html" %> if the <%= inline_code "http" %> status is 4XX or 5XX, or 
+    c) process Turbo Streams, which can trigger only a limited range of DOM changes
+  <% end %>
+<% end %>
+
+<%= subtitle do %>
+  Doing what Turbo isn't designed for...
+<% end %>
+
+<%= para do %>
+  These constraints are deliberate and there's no reason to debate them. But it is important to understand them and what they mean in practice. If we want to do something Turbo <%= italic "isn’t" %> really designed for, what should we do? What <%= italic "can" %> we do?
+<% end %>
+
+<%= para do %>
+  I was learning about Turbo soon after implementing a checkout flow in <%= link_to "Cookpad", "https://cookpad.com" %> using <%= link_to "stripe js", "https://stripe.com/docs/js" %>. It works by creating a Payment Method in Stripe, then submitting the Payment Method’s ID in a form to our server. If all goes well processing the purchase, the user is redirected to a success page. But the purchase might fail because the user needs to authorise the payment with their bank. In that scenario, our server returns the data needed to call stripe's <%= link_to "confirmCardPayment", "https://stripe.com/docs/js/payment_intents/confirm_card_payment" %> function. That function launches the authorisation flow for the user’s bank.<sup><%= link_to "2", "#note-2" %></sup>
+<% end %>
+
+<%= para do %>
+  Calling javascript functions using data returned by the server doesn’t feel like one of the Three Things Turbo is designed to do after submitting a form. So as I read about Turbo and saw what it could do and what it's for, I kept asking myself this: what if we need (or want) to do something else? And I tried to make that question a bit more specific:
+<% end %>
+
+<%= para extra_class: "ml-4" do %>
+  <%= italic "\"With Turbo set up, (how) can we submit a form then handle the response - in particular an error response - in a custom way, without only inserting and/or removing some html?\"" %>
+<% end %>
+
+<%= subtitle do %>
+  Option 1...
+<% end %>
+
+<%= para do %>
+  One option is to use Turbo up to a point, then, at that point, take over and handle the response ourself. Let Turbo submit the request, let Turbo handle a redirect, but prevent Turbo handling the response if instead of rendering <%= inline_code "html" %> or appending Turbo Stream elements we want to do “other stuff” like call some javascript functions. 
+<% end %>
+
+<%= para do %>
+  This is doable by listening for the <%= inline_code "turbo:before-fetch-response" %> event, emitted on the <%= inline_code "document" %> after the request has been made but before it has been used.
+<% end %> 
+
+<%= para do %>
+  I put this stimulus action on a form
+  <%= code language: :erb do %>
+    <form data-action="turbo:before-fetch-response@document->prevent-default#preventDefault">
+      ...
+    </form>
+  <% end %>
+<% end %>
+
+<%= para do %>
+  Then defined <%= inline_code "preventDefault" %> in the <%= inline_code "prevent-default" %> stimulus controller like this:
+  <%= code language: :js do %>
+    export default class extends Controller {
+      // Let Turbo make the request.
+      // Check the response. If it's unsuccessful, stop Turbo attempting to handle the response.
+
+      async preventDefault(event) {
+        // The response is available here and we can block Turbo's default behaviour.
+        if (!event.detail.fetchResponse.succeeded) {
+          event.preventDefault()
+
+          const json = await event.detail.fetchResponse.response.clone().json()
+          console.log("Do stuff with the json...", json)
+        }
+      }
+    }
+  <% end %>
+<% end %>
+
+<%= para do %>
+  Great, it works. If the server responds with an error, we can do whatever we want. See how the response doesn't even have to be <%= inline_code "html" %>. 
+<% end %>
+
+<%= para do %>
+  But there's a problem. Because the event target is <%= inline_code "document" %>, I couldn’t find a way to be sure it corresponds to the correct form on the page. If the target was the element that triggered the request, this might be a reasonable way to let Turbo make the request then optionally 'take over' when the response is ready.<sup><%= link_to "3", "#note-3" %></sup>
+<% end %>
+
+<%= subtitle do %>
+  Option 2a...
+<% end %>
+
+<%= para do %>
+  Another option is to trigger the “other stuff” (the stuff that isn’t inserting and/or removing <%= inline_code "html" %>) <%= italic "by" %> inserting some <%= inline_code "html" %>. For example, if we want trigger stripe’s card authorisation flow, we can return a Turbo Stream element that appends a block of <%= inline_code "html" %> that attaches a stimulus controller that is responsible for triggering the card authorisation flow.
+<% end %>
+
+<%= line %>
+
+<%= para extra_class: "mt-4" do %>
+  <sup id="note-1">1</sup> That's the <%= italic "Custom Error Handling With Turbo" %> bit
+<% end %>
+
+<%= para do %>
+  <sup id="note-2">2</sup> Similarly, after submitting the form, we call this <%= link_to "complete", "https://stripe.com/docs/js/payment_request/events/on_paymentmethod" %> function to finish processing an Apple or Google pay purchase. The argument we pass to <%= inline_code "complete" %> depends on the server response.
+<% end %>
+
+<%= para do %>
+  <sup id="note-3">3</sup> There is a separate event (<%= inline_code "turbo:submitEnd" %>) on the form element, but you cannot use it to prevent Turbo doing what it wants to do with the response, and you cannot even read the response, because Turbo has already read it.
+<% end %>

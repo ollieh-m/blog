@@ -3,7 +3,8 @@ class CodeSnippet
   LEXERS = {
     ruby: Rouge::Lexers::Ruby.new,
     shell: Rouge::Lexers::Shell.new,
-    erb: Rouge::Lexers::ERB.new
+    erb: Rouge::Lexers::ERB.new,
+    js: Rouge::Lexers::Javascript.new
   }
 
   def initialize(language, source_code)
