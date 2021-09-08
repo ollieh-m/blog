@@ -240,7 +240,7 @@
 <% end %>
 
 <%= para do %>
-  And here it is, <%= link_to "in the Turbo docs", "https://github.com/hotwired/turbo-rails/blob/main/UPGRADING.md#2-replace-the-turbolinks-gem-in-gemfile-with-turbo-rails" %>. A Turbo version of the <%= link_to "Turbolinks-Rails redirect_to method", "https://github.com/turbolinks/turbolinks-rails/blob/master/lib/turbolinks/redirection.rb" %>. Drop this into your ApplicationController, and you can redirect with Turbo even if Turbo didn't submit the form.
+  And here it is, <%= link_to "in the Turbo docs", "https://github.com/hotwired/turbo-rails/blob/main/UPGRADING.md#2-replace-the-turbolinks-gem-in-gemfile-with-turbo-rails" %>. A Turbo version of the <%= link_to "Turbolinks-Rails redirect_to method", "https://github.com/turbolinks/turbolinks-rails/blob/master/lib/turbolinks/redirection.rb" %>. Drop this into your ApplicationController, and you can redirect with Turbo even when Turbo didn't submit the form.
 <% end %>
 
 <%= subtitle do %>
@@ -252,14 +252,14 @@
 <% end %>
 
 <%= para do %>
-  Something that has become fairly clear as I've tried out these approaches is how we can help make the leap to Turbo calmer and more gradual. 
+  Something that has become fairly clear as I've tried out these approaches is a way to make the leap to Turbo calmer and more gradual. 
 <% end %>
 
 <%= para do %>
-  If your existing application submits <%= inline_code "remote: true" %> forms, there's no need to rewrite them all straight away. Let <%= inline_code "rails-ujs" %> continue intercepting the submissions. Let it continue emitting the convenient <%= inline_code "ajax:error" %> and <%= inline_code "ajax:success" %> hooks. Start by letting Turbo take over the <%= italic "other" %> forms: Turbo will seamlessly<sup><%= link_to "3", "#note-3" %></sup> turn them into ajax submissions and handle them without a full page load. <%= italic "Then" %> consider each "remote" form individually, removing <%= inline_code "remote: true" %> and refactoring to deliver the necessary behaviour with Turbo, or keeping <%= inline_code "remote: true" %>, or using <%= italic "neither" %> <%= inline_code "rails-ujs" %> nor Turbo.
+  If your existing application submits <%= inline_code "remote: true" %> forms, there's no need to rewrite them all straight away. Let <%= inline_code "rails-ujs" %> continue intercepting the submissions. Let it continue emitting the convenient <%= inline_code "ajax:error" %> and <%= inline_code "ajax:success" %> hooks. Start by letting Turbo take over the <%= italic "other" %> forms: Turbo will seamlessly<sup><%= link_to "3", "#note-3" %></sup> turn them into ajax submissions and handle them without a full page load. <%= italic "Then" %> consider each "remote" form individually, either removing <%= inline_code "remote: true" %> and refactoring to deliver the necessary behaviour with Turbo, or keeping <%= inline_code "remote: true" %>, or using <%= italic "neither" %> <%= inline_code "rails-ujs" %> nor Turbo.
 <% end %>
 
-<%= para do %>
+<%= para extra_class: "mb-8" %>
   Thanks for reading. Feel free to get in touch with me <%= link_to "@olliedoodleday", "https://twitter.com/olliedoodleday" %>. 👋
 <% end %>
 
