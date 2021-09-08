@@ -248,18 +248,18 @@
 <% end %>
 
 <%= para do %>
-  I don’t know how many others are or will be asking themselves <%= link_to "the question", "#the-question" %> I found <%= italic "myself" %> asking, and I haven't found The Answer to that question anyway. But hopefully I have explained a few approaches that might come in useful as we adapt to Rails without Turbolinks and without <%= inline_code "rails-ujs" %>.
+  I don’t know how many others are or will be asking themselves <%= link_to "the question", "#the-question" %> I found <%= italic "myself" %> asking, and I haven't found a definitive answer to that question anyway... But hopefully I have explained a few approaches that might help as we adapt to Rails without Turbolinks and without <%= inline_code "rails-ujs" %>.
 <% end %>
 
 <%= para do %>
-  Something that has become fairly clear as I've tried out these approaches is a way to make the leap to Turbo calmer and more gradual. 
+  I'll finish with a little bit of practical advice, because something that <%= italic "has" %> become clear as I've tried out these approaches is a way to make the leap to Turbo a bit calmer and more gradual. 
 <% end %>
 
 <%= para do %>
   If your existing application submits <%= inline_code "remote: true" %> forms, there's no need to rewrite them all straight away. Let <%= inline_code "rails-ujs" %> continue intercepting the submissions. Let it continue emitting the convenient <%= inline_code "ajax:error" %> and <%= inline_code "ajax:success" %> hooks. Start by letting Turbo take over the <%= italic "other" %> forms: Turbo will seamlessly<sup><%= link_to "3", "#note-3" %></sup> turn them into ajax submissions and handle them without a full page load. <%= italic "Then" %> consider each "remote" form individually, either removing <%= inline_code "remote: true" %> and refactoring to deliver the necessary behaviour with Turbo, or keeping <%= inline_code "remote: true" %>, or using <%= italic "neither" %> <%= inline_code "rails-ujs" %> nor Turbo.
 <% end %>
 
-<%= para extra_class: "mb-8" %>
+<%= para extra_class: "mb-8" do %>
   Thanks for reading. Feel free to get in touch with me <%= link_to "@olliedoodleday", "https://twitter.com/olliedoodleday" %>. 👋
 <% end %>
 
