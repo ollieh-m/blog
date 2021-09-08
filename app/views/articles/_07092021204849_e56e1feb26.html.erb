@@ -3,12 +3,7 @@
 <%= title article.title %>
 
 <%= para do %>
-  This post is three things:
-  <%= list do %>
-    1) an introduction to Turbo
-    2) a look at some options when we want to handle a form submission in ways Turbo isn't really designed for, especially when the server responds with an error<sup><%= link_to "1", "#note-1" %></sup>, and
-    3) some thoughts on making the switch to Turbo from <%= inline_code "rails-ujs" %>
-  <% end %>
+  Turbo will be a default part of Rails from Rails 7, replacing <%= link_to "Turbolinks", "https://github.com/turbolinks/turbolinks" %> and <%= link_to "rails-ujs", "https://github.com/rails/rails/tree/main/actionview/app/assets/javascripts" %>. This post is a result of time I spent digging into Turbo, in particular its implications for forms that don't seem to fit what Turbo is designed for: forms that don't necessarily (or only) trigger a redirect or DOM changes. I don't have a definitive answer for what we <%= italic "should" %> do in these cases, but I will explain some options that could be useful if or when the constraints in Turbo feel a bit awkward.
 <% end %>
 
 <%= subtitle do %>
@@ -57,15 +52,16 @@
 <% end %>
 
 <%= para do %>
-  I was learning about Turbo soon after implementing a checkout flow in <%= link_to "Cookpad", "https://cookpad.com" %> using <%= link_to "stripe js", "https://stripe.com/docs/js" %>. It works by creating a Payment Method in Stripe, then submitting the Payment Method’s ID in a form to our server. If all goes well processing the purchase, the user is redirected to a success page. But the purchase might fail because the user needs to authorise the payment with their bank. In that scenario, our server returns the data needed to call stripe's <%= link_to "confirmCardPayment", "https://stripe.com/docs/js/payment_intents/confirm_card_payment" %> function. That function launches the authorisation flow for the user’s bank.<sup><%= link_to "2", "#note-2" %></sup>
+  I was learning about Turbo soon after implementing a checkout flow in <%= link_to "Cookpad", "https://cookpad.com" %> using <%= link_to "stripe js", "https://stripe.com/docs/js" %>. It works by creating a Payment Method in Stripe, then submitting the Payment Method’s ID in a form to our server. If all goes well processing the purchase, the user is redirected to a success page. But the purchase might fail because the user needs to authorise the payment with their bank. In that scenario, our server returns the data needed to call stripe's <%= link_to "confirmCardPayment", "https://stripe.com/docs/js/payment_intents/confirm_card_payment" %> function. That function launches the authorisation flow for the user’s bank.<sup><%= link_to "1", "#note-1" %></sup>
 <% end %>
 
 <%= para do %>
   Calling javascript functions using data returned by the server doesn’t feel like one of the Three Things Turbo is designed to do after submitting a form. So as I read about Turbo and saw what it could do and what it's for, I kept asking myself this: what if we need (or want) to do something else? And I tried to make that question a bit more specific:
 <% end %>
 
-<%= para extra_class: "ml-4" do %>
-  <%= italic "\"With Turbo set up, (how) can we submit a form then handle the response - in particular an error response - in a custom way, without only inserting and/or removing some html?\"" %>
+<%= quote do %>
+  <span id="the-question"></span>
+  With Turbo set up, (how) can we submit a form then handle the response - in particular an error response - in a custom way, without only inserting and/or removing some html?
 <% end %>
 
 <%= subtitle do %>
@@ -114,7 +110,7 @@
 <% end %>
 
 <%= para do %>
-  But there's a problem. Because the event target is <%= inline_code "document" %>, I couldn’t find a way to be sure it corresponds to the correct form on the page. If the target was the element that triggered the request, this might be a reasonable way to let Turbo make the request then optionally 'take over' when the response is ready.<sup><%= link_to "3", "#note-3" %></sup>
+  But there's a problem. Because the event target is <%= inline_code "document" %>, I couldn’t find a way to be sure it corresponds to the correct form on the page. If the target was the element that triggered the request, this might be a reasonable way to let Turbo make the request then optionally 'take over' when the response is ready.<sup><%= link_to "2", "#note-2" %></sup>
 <% end %>
 
 <%= subtitle do %>
@@ -122,19 +118,153 @@
 <% end %>
 
 <%= para do %>
-  Another option is to trigger the “other stuff” (the stuff that isn’t inserting and/or removing <%= inline_code "html" %>) <%= italic "by" %> inserting some <%= inline_code "html" %>. For example, if we want trigger stripe’s card authorisation flow, we can return a Turbo Stream element that appends a block of <%= inline_code "html" %> that attaches a stimulus controller that is responsible for triggering the card authorisation flow.
+  Another option is to trigger the “other stuff” (the stuff that isn’t inserting and/or removing <%= inline_code "html" %>) <%= italic "by" %> inserting some <%= inline_code "html" %>. For example, if we want to trigger stripe’s card authorisation flow, we can return a Turbo Stream element that appends a block of <%= inline_code "html" %> that attaches a stimulus controller that is responsible for triggering the card authorisation flow.
+<% end %>
+
+<%= para do %>
+  The Turbo Stream element could be rendered like this:
+  <%= code language: :erb do %>
+    <%%= turbo_stream.update "stripe-authentication-container" do %>
+      <%%= render "shared/payment/authentication",
+        client_secret: error_payload[:data][:client_secret],
+        payment_method_id: error_payload[:data][:payment_method_id] %>
+    <%% end %>
+  <% end %>
+  When it's added to the DOM, it will update the contents of the <%= inline_code "stripe-authentication-container" %> with an authentication partial.
+<% end %>
+
+<%= para do %>
+  The authentication partial could look like this:
+  <%= code language: :erb do %>
+    <div
+      data-controller="stripe-authentication"
+      data-stripe-authentication-public-key-value="<%%= Rails.configuration.x.stripe.public_key %>"
+      data-stripe-authentication-client-secret-value="<%%= client_secret %>"
+      data-stripe-authentication-payment-method-id-value="<%%= payment_method_id %>">
+    </div>
+  <% end %>
+<% end %>
+
+<%= para do %>
+  And the stimulus controller's connect function could look like this:
+  <%= code language: :js do %>
+    async connect() {
+      this.stripe = await loadStripe(this.publicKeyValue)
+
+      const result = await this.stripe.confirmCardPayment(this.clientSecretValue, {
+        payment_method: this.paymentMethodIdValue,
+      })
+
+      // ...handle the result by showing errors or sending another request to fulfil the purchase
+    }
+  <% end %>
+<% end %>
+
+<%= para do %>
+  I think using a Turbo Stream to insert <%= inline_code "html" %> as a way to do other things - things that <%= italic "could" %> be done without inserting <%= inline_code "html" %> by handling the response directly - is in line with what the Turbo docs advocate <%= link_to "here", "https://turbo.hotwired.dev/handbook/streams" %>: 
+<% end %>
+
+<%= quote do %>
+  Turbo Streams consciously restricts you to seven actions: append, prepend, (insert) before, (insert) after, replace, update, and remove. If you want to trigger additional behavior when these actions are carried out, you should attach behavior using Stimulus controllers.
+<% end %>
+
+<%= subtitle do %>
+  Option 2b...
+<% end %>
+
+<%= para do %>
+  In the above example, the “other behaviour” is triggered when a stimulus controller connects, which happens when an element is added to the DOM. In that sense, the additional behaviour is triggered by the DOM change.
+<% end %>
+
+<%= para do %>
+  But we could also use a Turbo Stream to trigger behaviour in a more roundabout way: the Turbo Stream could cause a stimulus controller (A) to connect, which could emit an event, which we could listen for in some other stimulus controller (B). Stimulus controller B would then perform the action not because it has connected. This makes the resulting behaviour further removed from what the Turbo Stream is designed for: making a DOM change. 
+<% end %>
+
+<%= para do %>
+  We could render a Turbo Stream like this:
+  <%= code language: :erb %>
+    <%%= turb_stream.append "form" do %>
+      <div data-controller="pass-error" data-pass-error-payload-value="<%%= @object.errors.to_json %>"></div>
+    <%% end %>
+  <% end %>
+<% end %>
+
+<%= para do %>
+  The "pass-error" stimulus controller could connect like this:
+  <%= code language: :js do %>
+    connect() {
+      this.element.dispatchEvent(
+        new CustomEvent("error", { bubbles: true, detail: { payload: this.payloadValue }})
+      )
+
+      this.element.remove()
+    }
+  <% end %>
+<% end %>
+
+<%= para do %>
+  And we could listen for the custom error event in the same way we could listen for the <%= inline_code "rails-ujs" %> <%= inline_code "ajax:error" %> event:
+  <%= code language: :erb do %>
+    <form data-action="error->error-handler#handleError">
+      ...
+    </form>
+  <% end %>
+<% end %>
+
+<%= para do %>
+  This effectively means using a Turbo Stream to simulate the standard way we (at Cookpad) <%= italic "currently" %> handle a response payload. To be honest, it feels like hacking Turbo Streams to let us handle non-<%= inline_code "html" %> responses and isn't really in the spirit of Turbo… but it could be useful, especially if you want to switch to Turbo but continue acting on events similar to <%= inline_code "ajax:error" %>. 
+<% end %>
+
+<%= subtitle do %>
+  Option 3...
+<% end %>
+
+<%= para do %>
+  Finally, even with Turbo installed (and Turbolinks removed), we don’t <%= italic "have" %> to use it. We can disable Turbo on an individual form by adding a <%= inline_code "data-turbo=false" %> attribute. This will result in a standard non-ajax form submission. Or we can add a <%= inline_code "data-remote=true" %> attribute to the form. As long as we still have <%= inline_code "rails-ujs" %> installed, the "data-remote" attribute will stop Turbo handling the submission because <%= inline_code "rails-ujs" %> will intercept it first.
+<% end %>
+
+<%= para do %>
+  This is definitely a way to have Turbo set up while handling a form response in ways Turbo isn't designed for: don’t use Turbo to handle the response 😀. Submit the form with <%= inline_code "rails-ujs" %> and act on the events it emits to do whatever needs to be done. Great. 
+<% end %>
+
+<%= para do %>
+  Except that by default we then <%= italic "lose" %> the option of responding to the submission with a redirect. Without <%= inline_code "turbolinks-rails" %> installed, if you try to redirect in response to a <%= inline_code "rails-ujs" %> form submission, nothing will happen... 
+<% end %>
+
+<%= para do %>
+  What we need for <%= inline_code "rails-ujs" %> to be viable in a non-Turbolinks setup is a way to redirect (with Turbo) when a non-Turbo ajax form is submitted.
+<% end %>
+
+<%= para do %>
+  And here it is, <%= link_to "in the Turbo docs", "https://github.com/hotwired/turbo-rails/blob/main/UPGRADING.md#2-replace-the-turbolinks-gem-in-gemfile-with-turbo-rails" %>. A Turbo version of the <%= link_to "turbolinks-rails redirect_to method", "https://github.com/turbolinks/turbolinks-rails/blob/master/lib/turbolinks/redirection.rb" %>. 
+<% end %>
+
+<%= subtitle do %>
+  Conclusions...
+<% end %>
+
+<%= para do %>
+  I don’t know how many others are or will be asking themselves <%= link_to "the question", "#the-question" %> I found <%= italic "myself" %> asking as I started digging into Turbo. And I haven't found The Answer to that question. But hopefully I have explained a few approaches that might come in useful as we adapt to Rails without Turbolinks and without <%= inline_code "rails-ujs" %>.
+<% end %>
+
+<%= para do %>
+  Something that has become fairly clear is how we can help make the leap to Turbo calmer and more gradual. If your existing application submits <%= inline_code "remote: true" %> forms, there's no need to rewrite them all straight away. Let <%= inline_code "rails-ujs" %> continue intercepting the submissions. Let it continue emitting the convenient <%= inline_code "ajax:error" %> and <%= inline_code "ajax:success" %> hooks. Start by letting Turbo take over the <%= italic "other" %> forms: Turbo will seamlessly<sup><%= link_to "3", "#note-3" %></sup> turn them into ajax submissions and handle them without a full page load. <%= italic "Then" %> consider each "remote" form individually, removing <%= inline_code "remote: true" %> and refactoring to deliver the necessary behaviour with Turbo, or keeping <%= inline_code "remote: true" %>, or using <%= italic "neither" %> <%= inline_code "rails-ujs" %> nor Turbo.
+<% end %>
+
+<%= para do %>
+  Thanks for reading. Feel free to get in touch with me <%= link_to "@olliedoodleday", "https://twitter.com/olliedoodleday" %>. 👋
 <% end %>
 
 <%= line %>
 
 <%= para extra_class: "mt-4" do %>
-  <sup id="note-1">1</sup> That's the <%= italic "Custom Error Handling With Turbo" %> bit
+  <sup id="note-1">1</sup> Similarly, after submitting the form, we call this <%= link_to "complete", "https://stripe.com/docs/js/payment_request/events/on_paymentmethod" %> function to finish processing an Apple or Google pay purchase. The argument we pass to <%= inline_code "complete" %> depends on the server response.
 <% end %>
 
 <%= para do %>
-  <sup id="note-2">2</sup> Similarly, after submitting the form, we call this <%= link_to "complete", "https://stripe.com/docs/js/payment_request/events/on_paymentmethod" %> function to finish processing an Apple or Google pay purchase. The argument we pass to <%= inline_code "complete" %> depends on the server response.
+  <sup id="note-2">2</sup> There is a separate event (<%= inline_code "turbo:submitEnd" %>) on the form element, but you cannot use it to prevent Turbo doing what it wants to do with the response, and you cannot even read the response, because Turbo has already read it.
 <% end %>
 
 <%= para do %>
-  <sup id="note-3">3</sup> There is a separate event (<%= inline_code "turbo:submitEnd" %>) on the form element, but you cannot use it to prevent Turbo doing what it wants to do with the response, and you cannot even read the response, because Turbo has already read it.
+  <sup id="note-3">2</sup> Assuming the response is either a redirect or an <%= inline_code "html" %> response with a 4XX or 5XX status.
 <% end %>

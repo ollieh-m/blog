@@ -59,4 +59,12 @@ module ArticleHelper
     options = options.reverse_merge(class: "text-blue-600 hover:underline")
     super(*args, **options)
   end
+
+  def quote(&block)
+    text = capture(&block).strip
+
+    para extra_class: "ml-4" do
+      italic "\"#{text}\""
+    end
+  end
 end
