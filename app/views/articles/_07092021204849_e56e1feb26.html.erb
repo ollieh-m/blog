@@ -73,7 +73,7 @@
 <% end %>
 
 <%= para do %>
-  This is doable by listening for the <%= inline_code "turbo:before-fetch-response" %> event, emitted on the <%= inline_code "document" %> after the request has been made but before the response has been used.
+  This is doable by listening for the <%= inline_code "turbo:before-fetch-response" %> event, emitted after the request has been made but before the response has been used.
 <% end %> 
 
 <%= para do %>
@@ -110,7 +110,15 @@
 <% end %>
 
 <%= para do %>
-  But there's a problem. Because the event target is <%= inline_code "document" %>, I couldn’t find a nice way to be sure it corresponds to the correct form on the page. We could check the URL the request was sent to, or we could put a DOM identifier in the response, but neither is ideal. If the target was the element that triggered the request, we could listen for the event on the specific form we want to handle. That would be a convenient way to let Turbo make the request then optionally 'take over' when the response is ready.<sup><%= link_to "2", "#note-2" %></sup>
+  But <%= strike "there's a problem" %> 👈 UPDATE: The problem I describe below no longer exists. <%= link_to "This update", "https://github.com/hotwired/turbo/pull/367" %> means the <%= inline_code "turbo:before-fetch-response" %> event is fired on the form itself, not the <%= inline_code "document" %>. Our stimulus action can be <%= inline_code "turbo:before-fetch-response->prevent-default#preventDefault" %> instead of <%= inline_code "turbo:before-fetch-response@document->prevent-default#preventDefault" %>.
+<% end %>
+
+<%= para do %>
+  Because the event target <%= strike "is" %> was <%= inline_code "document" %>, I couldn’t find a nice way to be sure it corresponds to the correct form on the page. I could have checked the URL the request was sent to, or put a DOM identifier in the response, but neither is ideal. Now that the target is the element that triggered the request, we can listen for the event on the specific form we want to handle. That gives us a convenient way to let Turbo make the request then optionally 'take over' when the response is ready.
+<% end %>
+
+<%= para do %>
+  (Also note that if the response content-type is <%= inline_code "text/vnd.turbo-stream.html" %>, or the response status is 4XX or 5XX, we can take over from Turbo without <%= italic "needing" %> to call <%= inline_code "event.preventDefault()" %>. Turbo's default behaviour won't get in the way. Turbo only raises a "Form responses must redirect to another location" error if the response status is 200 and the content-type is something other than <%= inline_code "text/vnd.turbo-stream.html" %>. And if the response body is JSON, Turbo won't render it on the page or do anything else with it.)
 <% end %>
 
 <%= subtitle do %>
@@ -267,10 +275,6 @@
 
 <%= para extra_class: "mt-4" do %>
   <sup id="note-1">1</sup> Similarly, after submitting the form, we call this <%= link_to "complete", "https://stripe.com/docs/js/payment_request/events/on_paymentmethod" %> function to finish processing an Apple or Google pay purchase. The argument we pass to <%= inline_code "complete" %> depends on the server response.
-<% end %>
-
-<%= para do %>
-  <sup id="note-2">2</sup> There is a separate event (<%= inline_code "turbo:submitEnd" %>) on the form element, but you cannot use it to prevent Turbo doing what it wants to do with the response, and you cannot even read the response, because Turbo has already read it.
 <% end %>
 
 <%= para do %>

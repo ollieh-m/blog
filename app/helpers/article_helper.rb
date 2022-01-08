@@ -9,6 +9,12 @@ module ArticleHelper
     end
   end
 
+  def strike(text = nil)
+    tag.del do
+      text || yield
+    end 
+  end
+
   def title(text = nil)
     tag.div class: "text-5xl mb-2" do
       text || yield
