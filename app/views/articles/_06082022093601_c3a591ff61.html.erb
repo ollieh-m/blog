@@ -1,0 +1,77 @@
+<% # View for article An Easy Way To Rewrite Commit History with view ID 06082022093601_c3a591ff61 %>
+
+<%= title article.title %>
+
+<%= para do %>
+  Sometimes, my commit history is a mess: I'll commit something I didn't mean to, then remove it in the next commit, or a few commits later. Or I'll accidentally miss something from a commit then commit it separately. Or I'll fix something in a follow-up commit, then try a different fix in another commit, and again and again.
+<% end %>
+
+<%= para do %>
+  A messy commit history isn't always a problem, but sometimes I want or need to be precise about getting particular changes in particular commits. For example, at Cookpad, we deploy database migrations in isolation. After a PR that <%= italic "includes" %> a database migration is approved, we open a <%= italic "separate" %> PR to merge only the migration and schema change. This is simpler if we put the migration and schema change in a single commit. We can create a new branch, <%= inline_code "git cherry-pick" %> that commit, and that's it - we've extracted the migration to its own branch ready to open the migration-only PR.
+<% end %>
+
+<%= subtitle do %>
+  The problem
+<% end %>
+
+<%= para do %>
+  Re-writing a messy commit history can be difficult. I've spent too much time getting into frustrating tangles with <%= inline_code "git rebase" %>. <%= link_to "Interactive rebase", "https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase" %> is really handly when I want to remove specific commits, combine (i.e. 'squash' or 'fixup') specific commits, or reorder commits. But I've hit limits with it several times. What if I want to move changes from one commit to another? What if I want to move changes into a new commit? And combine them with other changes from other commits? 😬😅 
+<% end %>
+
+<%= para do %>
+  Maybe <%= inline_code "git rebase -i" %> does have the answers... but recently I've found an alternative that feels a lot simpler and less painful.
+<% end %>
+
+<%= subtitle do %>
+  The solution
+<% end %>
+
+<%= para do %>
+  Suppose you have a branch with a messy commit history called <%= inline_code "cool_feature" %>, and you've already opened a draft PR for that branch.
+<% end %>
+
+<%= para do %>
+  1. From that branch, merge in <%= inline_code "main" %> to ensure the diff against main is up-to-date:
+  <%= code language: :shell do %>
+    git checkout cool_feature
+    git merge main
+  <% end %>
+<% end %>
+
+<%= para do %>
+  2. Store the diff against main in a file:
+  <%= code language: :shell do %>
+    git diff main --patch > "full_diff_compared_with_main"
+  <% end %>
+<% end %>
+
+<%= para do %>
+  3. Delete the branch with the messy commit history and create a new branch with the same name:
+  <%= code language: :shell do %>
+    git checkout main
+    git branch -D cool_feature
+    git checkout -b cool_feature
+  <% end %>
+<% end %>
+
+<%= para do %>
+  4. Apply the changes from the file to the new cool_feature branch:
+  <%= code language: :shell do %>
+    git apply "full_diff_compared_with_main"
+  <% end %>
+<% end %>
+
+<%= para do %>
+  5. Now, all of the changes that were in the messy commit history are unstaged in your cool_feature branch. You can stage and commit them in any order and grouping you want. I use <%= link_to "Sourcetree", "https://www.sourcetreeapp.com/" %> to visualise what I'm staging and committing and what is left unstaged.
+<% end %>
+
+<%= para do %>
+  6. Force push the branch to update your draft PR. Only do this when you are happy with the new version of the branch:
+  <%= code language: :shell do %>
+    git push origin cool_feature -f
+  <% end %>
+<% end %>
+
+<%= para do %>
+  No more wrangling <%= inline_code "git rebase" %>. No need to re-write or copy-and-paste your changes. Full flexibility to organse those changes as you want/need.
+<% end %>
