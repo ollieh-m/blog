@@ -7,7 +7,7 @@
 <% end %>
 
 <%= para do %>
-  A messy commit history isn't always a problem, but sometimes I want or need to be precise about getting particular changes in particular commits. For example, at Cookpad, we deploy database migrations in isolation. After a PR that <%= italic "includes" %> a database migration is approved, we open a <%= italic "separate" %> PR to merge only the migration and schema change. This is simpler if we put the migration and schema change in a single commit. We can create a new branch, <%= inline_code "git cherry-pick" %> that commit, and that's it - we've extracted the migration to its own branch ready to open the migration-only PR.
+  A messy commit history isn't always a problem, but sometimes I want or need to be precise about having particular changes in particular commits. For example, at Cookpad, we deploy database migrations in isolation. After a PR that <%= italic "includes" %> a database migration is approved, we open a <%= italic "separate" %> PR to merge only the migration and schema change. This is simpler if we put the migration and schema change in a single commit. We can create a new branch, <%= inline_code "git cherry-pick" %> that commit, and that's it - we've extracted the migration to its own branch ready to open the migration-only PR.
 <% end %>
 
 <%= subtitle do %>
@@ -15,11 +15,11 @@
 <% end %>
 
 <%= para do %>
-  Re-writing a messy commit history can be difficult. I've spent too much time getting into frustrating tangles with <%= inline_code "git rebase" %>. <%= link_to "Interactive rebase", "https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase" %> is really handly when I want to remove specific commits, combine (i.e. 'squash' or 'fixup') specific commits, or reorder commits. But I've hit limits with it several times. What if I want to move changes from one commit to another? What if I want to move changes into a new commit? And combine them with other changes from other commits? 😬😅 
+  Re-writing a messy commit history can be difficult. I've spent too much time getting into frustrating tangles with <%= inline_code "git rebase" %>. <%= link_to "Interactive rebase", "https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase" %> is really handy when I want to remove specific commits, combine (i.e. 'squash' or 'fixup') specific commits, or reorder commits. But I've hit a wall with it several times. What if I want to move changes from one commit to another? What if I want to move changes into a new commit? And combine them with other changes from other commits? 😬😅 
 <% end %>
 
 <%= para do %>
-  Maybe <%= inline_code "git rebase -i" %> does have the answers... but recently I've found an alternative that feels a lot simpler and less painful.
+  Maybe <%= inline_code "git rebase -i HEAD~10" %> does have the answers... but recently I've found an alternative that feels a lot simpler and less painful.
 <% end %>
 
 <%= subtitle do %>
@@ -31,7 +31,7 @@
 <% end %>
 
 <%= para do %>
-  1. From that branch, merge in <%= inline_code "main" %> to ensure the diff against main is up-to-date:
+  1. From the branch, merge in <%= inline_code "main" %> to ensure the diff against main is up-to-date:
   <%= code language: :shell do %>
     git checkout cool_feature
     git merge main
@@ -39,7 +39,7 @@
 <% end %>
 
 <%= para do %>
-  2. Store the diff against main in a file:
+  2. Store the difference between <%= inline_code "cool_feature" %> and <%= inline_code "main" %> in a file:
   <%= code language: :shell do %>
     git diff main --patch > "full_diff_compared_with_main"
   <% end %>
@@ -55,14 +55,14 @@
 <% end %>
 
 <%= para do %>
-  4. Apply the changes from the file to the new cool_feature branch:
+  4. Apply the changes from the file to the new <%= inline_code "cool_feature" %> branch:
   <%= code language: :shell do %>
     git apply "full_diff_compared_with_main"
   <% end %>
 <% end %>
 
 <%= para do %>
-  5. Now, all of the changes that were in the messy commit history are unstaged in your cool_feature branch. You can stage and commit them in any order and grouping you want. I use <%= link_to "Sourcetree", "https://www.sourcetreeapp.com/" %> to visualise what I'm staging and committing and what is left unstaged.
+  5. Now, all of the changes that were in the messy commit history are unstaged in the <%= inline_code "cool_feature" %> branch. You can stage and commit them in any order and grouping you want. I use <%= link_to "Sourcetree", "https://www.sourcetreeapp.com/" %> to visualise what I'm staging and committing and what is still unstaged.
 <% end %>
 
 <%= para do %>
@@ -72,6 +72,6 @@
   <% end %>
 <% end %>
 
-<%= para do %>
+<%= para extra_class: "mb-8" do %>
   No more wrangling <%= inline_code "git rebase" %>. No need to re-write or copy-and-paste your changes. Full flexibility to organse those changes as you want/need.
 <% end %>
