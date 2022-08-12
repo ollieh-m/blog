@@ -1,5 +1,5 @@
 class CodeSnippet
-  FORMATTER = Rouge::Formatters::HTMLLineTable.new(Rouge::Formatters::HTML.new)
+  FORMATTER = Rouge::Formatters::HTMLLineTable.new(Rouge::Formatters::HTML.new, gutter_class: "hidden")
   LEXERS = {
     ruby: Rouge::Lexers::Ruby.new,
     shell: Rouge::Lexers::Shell.new,
